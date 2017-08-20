@@ -1,5 +1,3 @@
-var pluginParams = pluginParams || {};
-
 /*:
  * @plugindesc Heal up hp/mp from actors on lvl up
  * @author Alejandro López
@@ -32,39 +30,36 @@ var pluginParams = pluginParams || {};
  * @min 10
  * @default 0
  *
- * @param Use % or value
+ * @param % or value
  * @desc Mode of use: 1 for percentage or 2 for value specific
  * @type number
  * @max 2
  * @min 1
  * @default 1
  */
- 
-(function() {
-	var parameters = PluginManager.parameters('HealOnLvUp');
 
-	pluginParams.percentageHP = parseInt(parameters['% of HP']);
-	pluginParams.percentageMP = parseInt(parameters['% of MP']);
-	pluginParams.valueHP = parseInt(parameters['Value of HP']);
-	pluginParams.valueMP = parseInt(parameters['Value of MP']);
-	pluginParams.healValueMode = parseInt(parameters['Use % or value']);
+(function() {
+	var parameters = PluginManager.parameters('ROKI_HealOnLvUp');
+	
+	var percentageHP = parseInt(parameters['% of HP']);
+	var percentageMP = parseInt(parameters['% of MP']);
+	var valueHP = parseInt(parameters['Value of HP']);
+	var valueMP = parseInt(parameters['Value of MP']);
+	var healValueMode = parseInt(parameters['% or value']);
 	
 	Game_Actor.prototype.levelUp = function() {
 		this._level++;
 
-		var healAmountHP = pluginParams.valueHP;
-		var healAmountMP = pluginParams.valueMP;
+		var healAmountHP = valueHP;
+		var healAmountMP = valueMP;
 		
-		if (pluginParams.healValueMode == 1) {
-			healAmountHP = Math.round((this.mhp * pluginParams.percentageHP) / 100);
-			healAmountMP = Math.round((this.mmp * pluginParams.percentageMP) / 100);
+		if (healValueMode == 1) {
+			healAmountHP = Math.round((this.mhp * percentageHP) / 100);
+			healAmountMP = Math.round((this.mmp * percentageMP) / 100);
 		}
 		
-		$gameMessage.add("Healed HP: " + healAmountHP);
-		$gameMessage.add("Healed MP: " + healAmountMP);
-		
-		this._hp += healAmountHP;
-		this._mp += healAmountMP;
+		this._hp = healAmountHP > this.mhp ? this.mhp : this._hp + healAmountHP;
+		this._mp = healAmountMP > this.mmp ? this.mmp : this._mp + healAmountMP;
 
 		this.currentClass().learnings.forEach(function(learning) {
 			if (learning.level === this._level) {
